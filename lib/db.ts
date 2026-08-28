@@ -1,21 +1,42 @@
-import mongoose from "mongoose";
+import { Pool, type PoolClient, type QueryResultRow } from "pg";
 
-const uri = process.env.ATLAS_URI;
+type PgCache = { pool?: Pool };
+const globalForPg = globalThis as typeof globalThis & { pgCache?: PgCache };
+const cache = globalForPg.pgCache ?? {};
+globalForPg.pgCache = cache;
 
-type MongooseCache = { conn: typeof mongoose | null; promise: Promise<typeof mongoose> | null };
-const globalForMongoose = globalThis as typeof globalThis & { mongooseCache?: MongooseCache };
-const cache = globalForMongoose.mongooseCache ?? { conn: null, promise: null };
-globalForMongoose.mongooseCache = cache;
+export function database() {
+  const connectionString = process.env.DATABASE_URL;
+  if (!connectionString) throw new Error("DATABASE_URL is not configured");
 
-export async function connectDb() {
-  if (!uri) throw new Error("ATLAS_URI is not configured");
-  if (cache.conn) return cache.conn;
-  cache.promise ??= mongoose.connect(uri, { bufferCommands: false });
+  if (!cache.pool) {
+    cache.pool = new Pool({
+      connectionString,
+      max: 10,
+      idleTimeoutMillis: 30_000,
+      connectionTimeoutMillis: 10_000,
+      application_name: "zayani-portfolio",
+    });
+    cache.pool.on("error", (error) => console.error("Unexpected PostgreSQL pool error", error));
+  }
+  return cache.pool;
+}
+
+export async function query<T extends QueryResultRow = QueryResultRow>(text: string, values: unknown[] = []) {
+  return database().query<T>(text, values);
+}
+
+export async function withTransaction<T>(work: (client: PoolClient) => Promise<T>) {
+  const client = await database().connect();
   try {
-    cache.conn = await cache.promise;
-    return cache.conn;
+    await client.query("BEGIN");
+    const result = await work(client);
+    await client.query("COMMIT");
+    return result;
   } catch (error) {
-    cache.promise = null;
+    await client.query("ROLLBACK");
     throw error;
+  } finally {
+    client.release();
   }
 }

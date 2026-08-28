@@ -1,0 +1,41 @@
+{
+  "Portfolio": {
+    "dataUnavailable": "Connect PostgreSQL to load portfolio content.",
+    "fallbackName": "Mohamed Zayani",
+    "fallbackRole": "Journalist & Content Producer",
+    "fallbackLocation": "Istanbul",
+    "selectedWork": "Selected work",
+    "featured": "Featured",
+    "professional": "Professional",
+    "freelance": "Freelance"
+  },
+  "PdfPreview": {
+    "preparing": "Preparing CV preview…",
+    "loading": "Loading CV…",
+    "rendering": "Rendering page…",
+    "error": "The CV preview could not be loaded. You can still download the PDF.",
+    "previous": "Previous CV page",
+    "next": "Next CV page",
+    "loadingPages": "Loading pages…",
+    "pageCount": "Page {page} of {total}",
+    "open": "Open PDF",
+    "controls": "CV preview controls"
+  },
+  "LocaleSwitcher": {
+    "label": "Change language",
+    "english": "English",
+    "arabic": "العربية",
+    "turkish": "Türkçe"
+  },
+  "ContactValidation": {
+    "nameMin": "Please enter at least 2 characters.",
+    "nameMax": "Name must be 100 characters or fewer.",
+    "emailRequired": "Please enter your email address.",
+    "emailInvalid": "Please enter a valid email address.",
+    "emailMax": "Email must be 200 characters or fewer.",
+    "subjectMin": "Please enter a subject.",
+    "subjectMax": "Subject must be 160 characters or fewer.",
+    "messageMin": "Please enter at least 10 characters.",
+    "messageMax": "Message must be 5,000 characters or fewer."
+  }
+}

@@ -1,27 +1,24 @@
-import { connectDb } from "@/lib/db";
-import { SiteSettingsModel } from "@/lib/models";
+import { firstRecord, upsertSingleton } from "@/lib/content-repository";
+import { localizeRecord } from "@/lib/content-i18n";
+import type { AppLocale } from "@/i18n/routing";
 import { defaultSiteSettings, type SiteSettings } from "@/lib/site-settings";
 
-export async function getSiteSettings(): Promise<SiteSettings> {
-  await connectDb();
-  const record = await SiteSettingsModel.findOne().lean();
+export async function getSiteSettings(locale: AppLocale = "en"): Promise<SiteSettings> {
+  const record = await firstRecord("settings");
+  const localized = await localizeRecord("settings", record, locale);
 
   return {
     ...defaultSiteSettings,
-    ...JSON.parse(JSON.stringify(record)),
+    ...localized,
   } as SiteSettings;
 }
 
 export async function ensureSiteSettings(): Promise<SiteSettings> {
-  await connectDb();
-  const record = await SiteSettingsModel.findOneAndUpdate(
-    {},
-    { $setOnInsert: defaultSiteSettings },
-    { new: true, upsert: true },
-  ).lean();
+  const existing = await firstRecord("settings");
+  const record = existing ?? await upsertSingleton("settings", defaultSiteSettings);
 
   return {
     ...defaultSiteSettings,
-    ...JSON.parse(JSON.stringify(record)),
+    ...record,
   } as SiteSettings;
 }

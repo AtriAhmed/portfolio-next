@@ -1,44 +1,67 @@
-# Ahmed Atri portfolio
+# Zayani portfolio
 
-Unified Next.js application migrated from `portfolio-mern-front` and
-`portfolio-mern-backend`. The two source projects remain in this repository as
-read-only migration references for now.
+A unified Next.js portfolio with a PostgreSQL-backed content studio.
 
-## What is included
+## Included
 
-- Public server-rendered portfolio: about, experience, work, skills, contact,
-  and CV sections.
-- Protected admin studio for every existing MongoDB content type.
-- Cookie-based administrator sessions compatible with existing bcrypt password
-  hashes.
-- MongoDB models using the existing collection names and document shapes.
-- Contact email endpoint with validation and escaped HTML.
-- MongoDB-backed rate limits for administrator login attempts and contact-form spam.
-- Authenticated image upload support for project and experience images.
-- Admin-managed site settings for SEO text, navigation labels, section copy,
-  contact-form copy, CV headings, footer text, and section visibility.
-- Admin-managed portrait, content visibility, and display ordering.
+- Public server-rendered about, experience, education and training, selected work, expertise, languages, contact, and CV sections.
+- English, Arabic, and Turkish routes with right-to-left Arabic presentation and editable translated content.
+- Protected administrator studio for all portfolio content.
+- PostgreSQL schema with UUID primary keys and relational skill references.
+- Cookie-based administrator sessions with bcrypt password hashes.
+- PostgreSQL-backed login and contact-form rate limiting.
+- Contact email validation and escaped HTML.
+- Persistent authenticated image and CV PDF uploads with obsolete-file cleanup.
+- Editable SEO, navigation, section copy, CV headings, visibility, and ordering.
 
-## Local development
+## PostgreSQL setup
 
-The original backend environment was copied to `.env.local` during migration.
-Compare it with `.env.example`, then add `MAIL_TO` if messages should be sent to
-an address different from `MAIL_USER`.
+Create a database, then copy `.env.example` to `.env.local` and configure:
+
+```env
+DATABASE_URL=postgresql://portfolio:password@127.0.0.1:5432/zayani_portfolio
+MY_SECRET=replace-with-a-long-random-string
+```
+
+For a remote provider or a PostgreSQL server that requires TLS, include its
+required `sslmode` option in `DATABASE_URL`.
+
+Install dependencies and create/update the tables:
 
 ```bash
 npm install
+npm run db:migrate
+```
+
+Once the English records exist, import the supplied Arabic and Turkish translations:
+
+```bash
+npm run content:seed:ar
+npm run content:seed:tr
+```
+
+The public site is available at `/en`, `/ar`, and `/tr`; `/` redirects to English.
+Content editors can switch between English, Arabic, and Turkish inside each administrator
+resource. New records are created in English first, then translated in Arabic.
+
+Create the initial administrator. The same command resets the password when the
+username already exists:
+
+```bash
+ADMIN_USERNAME=zayani ADMIN_PASSWORD='use-a-long-password' npm run admin:create
+```
+
+Then start the application:
+
+```bash
 npm run dev
 ```
 
-Open <http://localhost:3000>. The admin login is at
-<http://localhost:3000/login> and uses the existing user stored in MongoDB.
+The administrator login is available at <http://localhost:3000/login>.
 
-Open **Site settings** in the admin sidebar to create the default settings
-document and edit global portfolio copy. Existing content without an explicit
-visibility value remains visible; lower display-order numbers appear first.
+## Rate limiting behind Nginx
 
-If Nginx proxies the app, forward the visitor address so rate limits are applied
-per client:
+Forward the visitor address so limits apply per client:
 
 ```nginx
 proxy_set_header X-Real-IP $remote_addr;
@@ -46,8 +69,8 @@ proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
 ```
 
 Login is limited to 10 attempts per IP and 5 per username every 15 minutes.
-The contact form is limited to 5 submissions per IP every hour. Limit state is
-stored in MongoDB and expired automatically.
+The contact form is limited to 5 submissions per IP every hour. Counters are
+stored in PostgreSQL and expired records are removed during normal limiter use.
 
 ## Verification
 
@@ -59,41 +82,21 @@ npm run build
 
 ## Persistent uploads on a VPS
 
-Keep uploaded files outside the application checkout so releases and rebuilds
-cannot delete them. The app serves files from this directory through
-`/uploads/*`, while MongoDB continues to store paths such as
-`uploads/images/example.jpg`.
-
-Create the directory once on the VPS (replace `portfolio` with the Linux user
-that runs the Node process):
+Keep uploads outside the application checkout so releases cannot delete them:
 
 ```bash
-sudo mkdir -p /var/lib/portfolio/uploads/images
-sudo chown -R portfolio:portfolio /var/lib/portfolio/uploads
-sudo chmod -R 750 /var/lib/portfolio/uploads
+sudo mkdir -p /var/lib/zayani-portfolio/uploads/images
+sudo chown -R portfolio:portfolio /var/lib/zayani-portfolio/uploads
+sudo chmod -R 750 /var/lib/zayani-portfolio/uploads
 ```
 
-Set this in the production environment used by systemd or PM2:
+Configure the application process:
 
 ```env
-UPLOAD_DIR=/var/lib/portfolio/uploads
+UPLOAD_DIR=/var/lib/zayani-portfolio/uploads
 ```
 
-Seed the images inherited from the Express application once:
-
-```bash
-sudo rsync -a public/uploads/ /var/lib/portfolio/uploads/
-sudo chown -R portfolio:portfolio /var/lib/portfolio/uploads
-```
-
-The Node process must have read/write permission on that directory. Nginx may
-optionally serve `/uploads/` directly for better throughput; the built-in route
-works without that optimization.
-
-When an administrator replaces an image or deletes its project/experience, the
-old managed file is removed after the database update succeeds. Shared image
-paths are retained until no MongoDB record references them. External image URLs
-and files outside `UPLOAD_DIR` are never deleted.
-
-After production has been verified, the two `portfolio-mern-*` folders can be
-archived or removed in a separate cleanup change.
+The app serves those files through `/uploads/*`, while PostgreSQL stores paths
+such as `uploads/images/example.jpg` and `uploads/documents/example.pdf`.
+Replaced or deleted managed files are removed once no content record references
+them. The CV PDF is uploaded from **Admin → Contact profile**.

@@ -1,0 +1,41 @@
+{
+  "Portfolio": {
+    "dataUnavailable": "تعذر تحميل محتوى الموقع من قاعدة البيانات.",
+    "fallbackName": "محمد الزياني",
+    "fallbackRole": "محرر مرئي | منتج محتوى",
+    "fallbackLocation": "إسطنبول",
+    "selectedWork": "أعمال مختارة",
+    "featured": "مميز",
+    "professional": "خبرة مهنية",
+    "freelance": "عمل حر"
+  },
+  "PdfPreview": {
+    "preparing": "جارٍ تجهيز معاينة السيرة الذاتية…",
+    "loading": "جارٍ تحميل السيرة الذاتية…",
+    "rendering": "جارٍ عرض الصفحة…",
+    "error": "تعذر عرض السيرة الذاتية، ولا يزال بإمكانك تنزيل ملف PDF.",
+    "previous": "الصفحة السابقة",
+    "next": "الصفحة التالية",
+    "loadingPages": "جارٍ تحميل الصفحات…",
+    "pageCount": "الصفحة {page} من {total}",
+    "open": "فتح ملف PDF",
+    "controls": "أدوات معاينة السيرة الذاتية"
+  },
+  "LocaleSwitcher": {
+    "label": "تغيير اللغة",
+    "english": "English",
+    "arabic": "العربية",
+    "turkish": "Türkçe"
+  },
+  "ContactValidation": {
+    "nameMin": "يرجى إدخال حرفين على الأقل.",
+    "nameMax": "يجب ألا يتجاوز الاسم 100 حرف.",
+    "emailRequired": "يرجى إدخال البريد الإلكتروني.",
+    "emailInvalid": "يرجى إدخال بريد إلكتروني صحيح.",
+    "emailMax": "يجب ألا يتجاوز البريد الإلكتروني 200 حرف.",
+    "subjectMin": "يرجى إدخال موضوع الرسالة.",
+    "subjectMax": "يجب ألا يتجاوز الموضوع 160 حرفاً.",
+    "messageMin": "يرجى إدخال 10 أحرف على الأقل.",
+    "messageMax": "يجب ألا تتجاوز الرسالة 5000 حرف."
+  }
+}

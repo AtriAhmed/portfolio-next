@@ -2,8 +2,7 @@ import bcrypt from "bcryptjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { createSession } from "@/lib/auth";
-import { connectDb } from "@/lib/db";
-import { UserModel } from "@/lib/models";
+import { query } from "@/lib/db";
 import { clearRateLimit, consumeRateLimit, rateLimitHeaders, requestIdentifier } from "@/lib/rate-limit";
 
 const credentialsSchema = z.object({
@@ -27,8 +26,10 @@ export async function POST(request: Request) {
         { status: 429, headers: rateLimitHeaders(result) },
       );
     }
-    await connectDb();
-    const user = await UserModel.findOne({ username: credentials.username });
+    const user = (await query<{ _id: string; username: string; password: string }>(
+      `SELECT "_id", "username", "password" FROM "users" WHERE "username" = $1 LIMIT 1`,
+      [credentials.username],
+    )).rows[0];
     if (!user || !(await bcrypt.compare(credentials.password, user.password))) {
       return NextResponse.json(
         { message: "Invalid username or password." },

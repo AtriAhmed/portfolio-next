@@ -4,6 +4,8 @@ export type Experience = {
   name: string;
   position: string;
   date: string;
+  location: string;
+  category: string;
   description: string;
   image?: string;
   showInCV?: boolean;
@@ -12,17 +14,22 @@ export type Experience = {
 };
 export type Work = {
   _id: string;
-  name: string;
+  title: string;
+  format: string;
+  outlet: string;
+  role: string;
+  date: string;
+  topic: string;
   description: string;
-  technologies: string;
   image?: string;
   link?: string;
-  showInCV?: boolean;
+  isFeatured?: boolean;
   order?: number;
   isVisible?: boolean;
 };
 export type Skill = { _id: string; name: string; level: string; type: string; order?: number; isVisible?: boolean };
 export type SkillType = { _id: string; name: string; skills: Skill[]; order?: number; isVisible?: boolean };
+export type Language = { _id: string; name: string; level: string; order?: number; isVisible?: boolean };
 export type Contact = {
   _id: string;
   name: string;
@@ -32,10 +39,12 @@ export type Contact = {
   email: string;
   phone: string;
   location: string;
-  github?: string;
   linkedin?: string;
+  x?: string;
+  facebook?: string;
   website?: string;
   image?: string;
+  cv?: string;
 };
 export type Education = {
   _id: string;
@@ -43,4 +52,7 @@ export type Education = {
   institute: string;
   date: string;
   location: string;
+  order?: number;
+  isVisible?: boolean;
 };
+export type Training = { _id: string; title: string; provider: string; date: string; location: string; order?: number; isVisible?: boolean };

@@ -1,6 +1,5 @@
 import { createHash } from "crypto";
-import { connectDb } from "@/lib/db";
-import { RateLimitModel } from "@/lib/models";
+import { query } from "@/lib/db";
 
 type RateLimitOptions = {
   namespace: string;
@@ -18,27 +17,21 @@ export type RateLimitResult = {
 };
 
 export async function consumeRateLimit(options: RateLimitOptions): Promise<RateLimitResult> {
-  await connectDb();
   const now = new Date();
   const nextReset = new Date(now.getTime() + options.windowMs);
   const key = rateLimitKey(options.namespace, options.identifier);
 
-  const record = await RateLimitModel.findOneAndUpdate(
-    { _id: key },
-    [{
-      $set: {
-        count: {
-          $cond: [
-            { $gt: ["$resetAt", now] },
-            { $add: [{ $ifNull: ["$count", 0] }, 1] },
-            1,
-          ],
-        },
-        resetAt: { $cond: [{ $gt: ["$resetAt", now] }, "$resetAt", nextReset] },
-      },
-    }],
-    { new: true, upsert: true },
-  ).lean<{ count: number; resetAt: Date }>();
+  const record = (await query<{ count: number; resetAt: Date }>(
+    `INSERT INTO "rate_limits" ("key", "count", "reset_at") VALUES ($1, 1, $2)
+     ON CONFLICT ("key") DO UPDATE SET
+       "count" = CASE WHEN "rate_limits"."reset_at" > $3 THEN "rate_limits"."count" + 1 ELSE 1 END,
+       "reset_at" = CASE WHEN "rate_limits"."reset_at" > $3 THEN "rate_limits"."reset_at" ELSE $2 END
+     RETURNING "count", "reset_at" AS "resetAt"`,
+    [key, nextReset, now],
+  )).rows[0];
+  void query(`DELETE FROM "rate_limits" WHERE "reset_at" < NOW() - INTERVAL '1 day'`).catch((error) => {
+    console.error("Could not clean expired rate limits", error);
+  });
 
   const count = record?.count ?? 1;
   const resetAt = new Date(record?.resetAt ?? nextReset);
@@ -52,8 +45,7 @@ export async function consumeRateLimit(options: RateLimitOptions): Promise<RateL
 }
 
 export async function clearRateLimit(namespace: string, identifier: string) {
-  await connectDb();
-  await RateLimitModel.deleteOne({ _id: rateLimitKey(namespace, identifier) });
+  await query(`DELETE FROM "rate_limits" WHERE "key" = $1`, [rateLimitKey(namespace, identifier)]);
 }
 
 export function requestIdentifier(request: Request) {

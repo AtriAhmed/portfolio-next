@@ -4,12 +4,16 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { CircleAlert, Send } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { contactMessageSchema, type ContactMessage } from "@/lib/contact-schema";
+import { useLocale, useTranslations } from "next-intl";
+import { createContactMessageSchema, type ContactMessage } from "@/lib/contact-schema";
 import type { SiteSettings } from "@/lib/site-settings";
 
 export function ContactForm({ settings }: { settings: SiteSettings }) {
+  const locale = useLocale();
+  const t = useTranslations("ContactValidation");
+  const schema = createContactMessageSchema({ nameMin: t("nameMin"), nameMax: t("nameMax"), emailRequired: t("emailRequired"), emailInvalid: t("emailInvalid"), emailMax: t("emailMax"), subjectMin: t("subjectMin"), subjectMax: t("subjectMax"), messageMin: t("messageMin"), messageMax: t("messageMax") });
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm<ContactMessage>({
-    resolver: zodResolver(contactMessageSchema),
+    resolver: zodResolver(schema),
     mode: "onBlur",
     reValidateMode: "onChange",
     defaultValues: { name: "", email: "", subject: "", message: "" },
@@ -19,7 +23,7 @@ export function ContactForm({ settings }: { settings: SiteSettings }) {
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { "Content-Type": "application/json", "Accept-Language": locale },
         body: JSON.stringify(values),
       });
       const result = await response.json();

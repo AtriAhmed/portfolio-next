@@ -1,0 +1,41 @@
+{
+  "Portfolio": {
+    "dataUnavailable": "Portföy içeriği veritabanından yüklenemedi.",
+    "fallbackName": "Muhamet Zayani",
+    "fallbackRole": "Gazeteci | İçerik Üreticisi",
+    "fallbackLocation": "İstanbul",
+    "selectedWork": "Seçili çalışmalar",
+    "featured": "Öne çıkan",
+    "professional": "Profesyonel",
+    "freelance": "Serbest çalışma"
+  },
+  "PdfPreview": {
+    "preparing": "Özgeçmiş önizlemesi hazırlanıyor…",
+    "loading": "Özgeçmiş yükleniyor…",
+    "rendering": "Sayfa görüntüleniyor…",
+    "error": "Özgeçmiş önizlemesi yüklenemedi. PDF dosyasını yine de indirebilirsiniz.",
+    "previous": "Önceki özgeçmiş sayfası",
+    "next": "Sonraki özgeçmiş sayfası",
+    "loadingPages": "Sayfalar yükleniyor…",
+    "pageCount": "Sayfa {page} / {total}",
+    "open": "PDF'yi aç",
+    "controls": "Özgeçmiş önizleme kontrolleri"
+  },
+  "LocaleSwitcher": {
+    "label": "Dili değiştir",
+    "english": "English",
+    "arabic": "العربية",
+    "turkish": "Türkçe"
+  },
+  "ContactValidation": {
+    "nameMin": "Lütfen en az 2 karakter girin.",
+    "nameMax": "Ad en fazla 100 karakter olabilir.",
+    "emailRequired": "Lütfen e-posta adresinizi girin.",
+    "emailInvalid": "Lütfen geçerli bir e-posta adresi girin.",
+    "emailMax": "E-posta en fazla 200 karakter olabilir.",
+    "subjectMin": "Lütfen bir konu girin.",
+    "subjectMax": "Konu en fazla 160 karakter olabilir.",
+    "messageMin": "Lütfen en az 10 karakter girin.",
+    "messageMax": "Mesaj en fazla 5.000 karakter olabilir."
+  }
+}
