@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
 
 export const SESSION_COOKIE = "portfolio_session";
-const sessionDuration = 60 * 60;
+const sessionDuration = 7 * 24 * 60 * 60;
 
 function secret() {
   const value = process.env.MY_SECRET;
@@ -45,5 +45,12 @@ export async function getSession() {
 export async function requireSession() {
   const session = await getSession();
   if (!session) throw new Error("UNAUTHORIZED");
+  return session;
+}
+
+export async function refreshSession() {
+  const session = await getSession();
+  if (!session) return null;
+  await createSession(session.userId, session.username);
   return session;
 }

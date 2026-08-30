@@ -179,6 +179,7 @@ export function ResourceManager({ resource, config }: { resource: string; config
             field={field}
             editing={editing}
             types={types}
+            locale={locale}
             error={fieldErrors[field.key]}
           />)}
           {formError && <p className="admin-error form-error">{formError}</p>}
@@ -193,7 +194,7 @@ export function ResourceManager({ resource, config }: { resource: string; config
   </>;
 }
 
-function AdminFormField({ field, editing, types, error }: { field: AdminField; editing: RecordData | null; types: RecordData[]; error?: string }) {
+function AdminFormField({ field, editing, types, locale, error }: { field: AdminField; editing: RecordData | null; types: RecordData[]; locale: AppLocale; error?: string }) {
   const errorId = `${field.key}-error`;
   const invalidProps = { "aria-invalid": Boolean(error), "aria-describedby": error ? errorId : undefined };
   if (field.type === "image") return <div className="admin-image-source">
@@ -227,6 +228,7 @@ function AdminFormField({ field, editing, types, error }: { field: AdminField; e
             />}
       </>}
     {error && <span className="field-message" id={errorId} role="alert"><CircleAlert size={14} />{error}</span>}
+    {field.type === "pdf" && locale !== "en" && <small className="field-help">This PDF is used only for the selected language. English remains the fallback.</small>}
   </label>;
 }
 

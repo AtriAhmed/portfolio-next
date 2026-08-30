@@ -2,7 +2,7 @@ import type { ResourceName } from "@/lib/content-repository";
 
 export const translatableFields: Record<ResourceName, readonly string[]> = {
   about: ["title", "content"],
-  contact: ["name", "lastname", "title", "summary", "location"],
+  contact: ["name", "lastname", "title", "summary", "location", "cv"],
   education: ["certificate", "institute", "date", "location"],
   experiences: ["name", "position", "date", "location", "description"],
   languages: ["name", "level"],

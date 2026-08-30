@@ -19,16 +19,36 @@ export async function localizeRecord(resource: ResourceName, record: DatabaseRec
   return (await localizeRecords(resource, [record], locale))[0];
 }
 
+export async function translationData(resource: ResourceName, recordId: string, locale: Exclude<AppLocale, "en">) {
+  const result = await query<{ data: Record<string, unknown> }>(
+    `SELECT "data" FROM "content_translations" WHERE "resource" = $1 AND "record_id" = $2 AND "locale" = $3`,
+    [resource, recordId, locale],
+  );
+  return result.rows[0]?.data ?? {};
+}
+
 export async function upsertTranslation(resource: ResourceName, recordId: string, locale: Exclude<AppLocale, "en">, input: Record<string, unknown>) {
   const data = cleanTranslationData(resource, input);
-  await query(
+  const result = await query<{ data: Record<string, unknown> }>(
     `INSERT INTO "content_translations" ("resource", "record_id", "locale", "data") VALUES ($1, $2, $3, $4::jsonb)
-     ON CONFLICT ("resource", "record_id", "locale") DO UPDATE SET "data" = EXCLUDED."data"`,
+     ON CONFLICT ("resource", "record_id", "locale") DO UPDATE SET "data" = "content_translations"."data" || EXCLUDED."data"
+     RETURNING "data"`,
     [resource, recordId, locale, JSON.stringify(data)],
   );
-  return data;
+  return result.rows[0]?.data ?? data;
 }
 
 export async function deleteTranslations(resource: ResourceName, recordId: string) {
-  await query(`DELETE FROM "content_translations" WHERE "resource" = $1 AND "record_id" = $2`, [resource, recordId]);
+  return (await query<{ data: Record<string, unknown> }>(
+    `DELETE FROM "content_translations" WHERE "resource" = $1 AND "record_id" = $2 RETURNING "data"`,
+    [resource, recordId],
+  )).rows;
+}
+
+export async function translationUsesAsset(asset: string) {
+  const result = await query<{ exists: boolean }>(
+    `SELECT EXISTS(SELECT 1 FROM "content_translations" WHERE "data" ->> 'image' = $1 OR "data" ->> 'cv' = $1) AS "exists"`,
+    [asset],
+  );
+  return result.rows[0]?.exists ?? false;
 }

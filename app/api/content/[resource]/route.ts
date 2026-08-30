@@ -17,7 +17,7 @@ import {
 } from "@/lib/content-repository";
 import { deleteManagedUpload, importImageFromUrl, saveUploadedImage, saveUploadedPdf } from "@/lib/uploads";
 import { ensureSiteSettings } from "@/lib/site-settings-data";
-import { deleteTranslations, localizeRecord, localizeRecords, upsertTranslation } from "@/lib/content-i18n";
+import { deleteTranslations, localizeRecord, localizeRecords, translationData, translationUsesAsset, upsertTranslation } from "@/lib/content-i18n";
 import { routing, type AppLocale } from "@/i18n/routing";
 
 export const runtime = "nodejs";
@@ -118,7 +118,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ reso
     const input = await parseBody(request, resource);
     const locale = requestLocale(request);
     if (locale !== "en") {
+      const previousTranslation = await translationData(resource, id, locale);
+      uploadedAssets = assetsFromRecord(input);
       const translation = await upsertTranslation(resource, id, locale, input);
+      await deleteReplacedAssets(previousTranslation, translation);
       return NextResponse.json({ ...previousRecord, ...translation });
     }
     uploadedAssets = assetsFromRecord(input);
@@ -154,8 +157,8 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ r
     }
     const record = await deleteRecord(resource, id);
     if (!record) return NextResponse.json({ message: "Record not found." }, { status: 404 });
-    await deleteTranslations(resource, id);
-    await Promise.all(assetsFromRecord(record).map(deleteAssetIfUnreferenced));
+    const translations = await deleteTranslations(resource, id);
+    await Promise.all([...assetsFromRecord(record), ...translations.flatMap(assetsFromRecord)].map(deleteAssetIfUnreferenced));
     return NextResponse.json({ ok: true });
   } catch (error) {
     return contentError(error);
@@ -182,6 +185,7 @@ async function deleteAssetIfUnreferenced(asset: string) {
       recordExists("work", "image", asset),
       recordExists("contact", "image", asset),
       recordExists("contact", "cv", asset),
+      translationUsesAsset(asset),
     ]);
     if (!usesAsset.some(Boolean)) await deleteManagedUpload(asset);
   } catch (error) {

@@ -7,7 +7,7 @@ if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is not configured")
 const records = [
   { resource: "about", match: ["title", "Professional Profile"], data: { title: "الملف المهني", content: "صحافة مهنية · محتوى متنوع هادف · سرد تاريخي ملهم" } },
   { resource: "about", match: ["title", "Background"], data: { title: "المقدمة", content: "أعمل كصحفي ومحرر أخبار منذ سنة 2013 كما أعد برامج حوارية في مختلف المجالات السياسية والاجتماعية والتاريخية والثقافية، فضلاً عن إنتاج محتويات تتعلق بعدد من المواضيع التاريخية والثقافية، أتميز بالدقة، المصداقية، والبحث العميق والقدرة على صياغة محتوى يجمع بين المصداقية والإبداع." } },
-  { resource: "contact", data: { name: "محمد", lastname: "الزياني", title: "محرر مرئي | منتج محتوى", summary: "أعمل كصحفي ومحرر أخبار منذ سنة 2013 كما أعد برامج حوارية في مختلف المجالات السياسية والاجتماعية والتاريخية والثقافية، فضلاً عن إنتاج محتويات تتعلق بعدد من المواضيع التاريخية والثقافية، أتميز بالدقة، المصداقية، والبحث العميق والقدرة على صياغة محتوى يجمع بين المصداقية والإبداع.", location: "إسطنبول، تركيا" } },
+  { resource: "contact", data: { name: "محمد", lastname: "الزياني", title: "محرر | منتج محتوى", summary: "أعمل كصحفي ومحرر أخبار منذ سنة 2013 كما أعد برامج حوارية في مختلف المجالات السياسية والاجتماعية والتاريخية والثقافية، فضلاً عن إنتاج محتويات تتعلق بعدد من المواضيع التاريخية والثقافية، أتميز بالدقة، المصداقية، والبحث العميق والقدرة على صياغة محتوى يجمع بين المصداقية والإبداع.", location: "إسطنبول، تركيا" } },
 
   { resource: "experiences", match: ["name", "AlMawsleya TV Channel"], data: { name: "قناة الموصلية الفضائية", position: "محرر أخبار ومعد برامج", date: "2018 حتى الآن", location: "إسطنبول، تركيا", description: "أعمل كمحرر للأخبار اليومية إضافة إلى إعداد برامج حوارية في مختلف المجالات السياسية والاجتماعية والثقافية." } },
   { resource: "experiences", match: ["name", "Al-Damir Tunisian Newspaper"], data: { name: "صحيفة الضمير التونسية", position: "مراسل صحفي", date: "2016 – 2017", location: "تونس", description: "عملت خلال هذه المدة على نقل الأحداث السياسية والتحركات الاجتماعية والتظاهرات الثقافية كمراسل محلي." } },
@@ -45,7 +45,7 @@ const records = [
   { resource: "languages", match: ["name", "Turkish"], data: { name: "التركية", level: "متوسط" } },
 
   { resource: "settings", data: {
-    siteTitle: "محمد الزياني | محرر مرئي ومنتج محتوى", siteDescription: "الموقع المهني للصحفي ومنتج المحتوى محمد الزياني، ويعرض خبراته وأعماله ومهاراته.",
+    siteTitle: "محمد الزياني | محرر ومنتج محتوى", siteDescription: "الموقع المهني للصحفي ومنتج المحتوى محمد الزياني، ويعرض خبراته وأعماله ومهاراته.",
     heroEyebrow: "مرحباً، أنا", heroCtaLabel: "استكشف أعمالي", portraitLabelPrefix: "مقيم في",
     navAboutLabel: "نبذة", navExperienceLabel: "الخبرات", navEducationLabel: "التعليم", navWorkLabel: "أعمال مختارة", navSkillsLabel: "الخبرات المهنية", navLanguagesLabel: "اللغات", navContactLabel: "اتصل بي", navCvLabel: "السيرة الذاتية",
     experienceKicker: "مسيرتي", experienceTitle: "الخبرات العملية", educationKicker: "المؤهلات", educationTitle: "التعليم والتدريب", educationDegreesHeading: "التعليم الأكاديمي", educationTrainingHeading: "الدورات التدريبية",
