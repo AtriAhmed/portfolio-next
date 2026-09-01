@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { requireSession } from "@/lib/auth";
 import {
   cleanResourceData,
@@ -97,6 +98,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ res
       ? await upsertSingleton(resource, data)
       : await createRecord(resource, data);
     await deleteReplacedAssets(previousRecord, record);
+    revalidatePortfolio();
     return NextResponse.json(record, { status: 201 });
   } catch (error) {
     await Promise.all(uploadedAssets.map(deleteAssetIfUnreferenced));
@@ -122,6 +124,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ reso
       uploadedAssets = assetsFromRecord(input);
       const translation = await upsertTranslation(resource, id, locale, input);
       await deleteReplacedAssets(previousTranslation, translation);
+      revalidatePortfolio();
       return NextResponse.json({ ...previousRecord, ...translation });
     }
     uploadedAssets = assetsFromRecord(input);
@@ -132,6 +135,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ reso
     }
 
     await deleteReplacedAssets(previousRecord, record);
+    revalidatePortfolio();
     return NextResponse.json(record);
   } catch (error) {
     await Promise.all(uploadedAssets.map(deleteAssetIfUnreferenced));
@@ -159,6 +163,7 @@ export async function DELETE(request: Request, { params }: { params: Promise<{ r
     if (!record) return NextResponse.json({ message: "Record not found." }, { status: 404 });
     const translations = await deleteTranslations(resource, id);
     await Promise.all([...assetsFromRecord(record), ...translations.flatMap(assetsFromRecord)].map(deleteAssetIfUnreferenced));
+    revalidatePortfolio();
     return NextResponse.json({ ok: true });
   } catch (error) {
     return contentError(error);
@@ -195,6 +200,10 @@ async function deleteAssetIfUnreferenced(asset: string) {
 
 function isUuid(value: string) {
   return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+function revalidatePortfolio() {
+  revalidateTag("portfolio-data", "max");
 }
 
 function requestLocale(request: Request): AppLocale {

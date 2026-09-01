@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { firstRecord, listRecords } from "@/lib/content-repository";
 import { localizeRecord, localizeRecords } from "@/lib/content-i18n";
 import type { AppLocale } from "@/i18n/routing";
@@ -17,7 +18,7 @@ export type PortfolioData = {
   settings: SiteSettings;
 };
 
-export async function getPortfolioData(locale: AppLocale = "en"): Promise<PortfolioData> {
+const getCachedPortfolioData = unstable_cache(async (locale: AppLocale): Promise<PortfolioData> => {
   const [abouts, experiences, works, types, languages, contact, education, training, settings] = await Promise.all([
     listRecords("about"),
     listRecords("experiences"),
@@ -55,4 +56,12 @@ export async function getPortfolioData(locale: AppLocale = "en"): Promise<Portfo
     training: localizedTraining.filter((record) => record.isVisible !== false) as unknown as Training[],
     settings,
   };
+}, ["portfolio-data"], { revalidate: 900, tags: ["portfolio-data"] });
+
+/**
+ * Public portfolio content is cached for 15 minutes to keep database work off
+ * the critical request path. Admin mutations invalidate this tag immediately.
+ */
+export async function getPortfolioData(locale: AppLocale = "en"): Promise<PortfolioData> {
+  return getCachedPortfolioData(locale);
 }

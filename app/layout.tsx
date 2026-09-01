@@ -3,6 +3,7 @@ import { Noto_Sans_Arabic } from "next/font/google";
 import { headers } from "next/headers";
 import { Toaster } from "sonner";
 import { MotionProvider } from "@/components/motion-provider";
+import { getSiteUrl } from "@/lib/site-url";
 import "./globals.css";
 
 const notoSansArabic = Noto_Sans_Arabic({
@@ -12,8 +13,17 @@ const notoSansArabic = Noto_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
+  metadataBase: getSiteUrl(),
   title: "Mohamed Zayani | Journalist & Content Producer",
   description: "Journalism, content production, research, and selected work by Mohamed Zayani.",
+  applicationName: "Mohamed Zayani Portfolio",
+  authors: [{ name: "Mohamed Zayani" }],
+  creator: "Mohamed Zayani",
+  robots: { index: true, follow: true },
+  verification: {
+    google: process.env.GOOGLE_SITE_VERIFICATION,
+    other: process.env.BING_SITE_VERIFICATION ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION } : undefined,
+  },
 };
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

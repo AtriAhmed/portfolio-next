@@ -11,7 +11,7 @@ import { CvPreview } from "@/components/cv-preview";
 import { SiteNav } from "@/components/site-nav";
 import { getPortfolioData, type PortfolioData } from "@/lib/content";
 import { defaultSiteSettings } from "@/lib/site-settings";
-import { getSiteSettings } from "@/lib/site-settings-data";
+import { absoluteUrl } from "@/lib/site-url";
 import type { Work } from "@/lib/types";
 import { routing, type AppLocale } from "@/i18n/routing";
 
@@ -22,15 +22,40 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const locale: AppLocale = hasLocale(routing.locales, value) ? value : "en";
   let settings = defaultSiteSettings;
   try {
-    settings = await getSiteSettings(locale);
+    settings = (await getPortfolioData(locale)).settings;
   } catch (error) {
     console.error("Site metadata settings could not be loaded", error);
   }
+  const canonical = absoluteUrl(`/${locale}`);
+  const socialImage = absoluteUrl("/opengraph-image");
   return {
     title: settings.siteTitle,
     description: settings.siteDescription,
-    openGraph: { title: settings.siteTitle, description: settings.siteDescription, type: "website" },
-    alternates: { canonical: `/${locale}`, languages: { en: "/en", ar: "/ar", tr: "/tr" } },
+    keywords: ["Mohamed Zayani", "journalist", "content producer", "Tunisia", "research", "storytelling"],
+    openGraph: {
+      title: settings.siteTitle,
+      description: settings.siteDescription,
+      url: canonical,
+      siteName: "Mohamed Zayani",
+      locale: openGraphLocale(locale),
+      type: "website",
+      images: [{ url: socialImage, width: 1200, height: 630, alt: "Mohamed Zayani — Journalist and Content Producer" }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.siteTitle,
+      description: settings.siteDescription,
+      images: [socialImage],
+    },
+    alternates: {
+      canonical,
+      languages: {
+        en: absoluteUrl("/en"),
+        ar: absoluteUrl("/ar"),
+        tr: absoluteUrl("/tr"),
+        "x-default": absoluteUrl("/en"),
+      },
+    },
   };
 }
 
@@ -54,6 +79,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   const initials = displayName.split(/\s+/).map((part) => part[0]).join("").slice(0, 2).toUpperCase();
   const cvFilename = `${displayName.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "") || "portfolio"}-CV.pdf`;
   const { settings } = data;
+  const structuredData = portfolioStructuredData({ locale, displayName, settings, contact: data.contact });
   const navigation = [
     { href: "#about", label: settings.navAboutLabel },
     ...(settings.showExperience ? [{ href: "#experience", label: settings.navExperienceLabel }] : []),
@@ -66,6 +92,7 @@ export default async function Home({ params }: { params: Promise<{ locale: strin
   ];
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData).replace(/</g, "\\u003c") }} />
       <SiteNav
         name={displayName}
         title={data.contact?.title}
@@ -217,4 +244,39 @@ function reveal(direction: "up" | "left" | "right" | "scale", delay = 0) {
 
 function imagePath(value: string) {
   return value.startsWith("/") ? value : `/${value}`;
+}
+
+function openGraphLocale(locale: AppLocale) {
+  return locale === "ar" ? "ar_TN" : locale === "tr" ? "tr_TR" : "en_US";
+}
+
+function portfolioStructuredData({ locale, displayName, settings, contact }: { locale: AppLocale; displayName: string; settings: PortfolioData["settings"]; contact: PortfolioData["contact"] }) {
+  const profileUrl = absoluteUrl(`/${locale}`);
+  const sameAs = [contact?.linkedin, contact?.x, contact?.facebook, contact?.website].filter((value): value is string => Boolean(value));
+  const person = {
+    "@type": "Person",
+    "@id": `${profileUrl}#person`,
+    name: displayName,
+    url: profileUrl,
+    jobTitle: contact?.title || undefined,
+    description: contact?.summary || settings.siteDescription,
+    image: contact?.image ? absoluteUrl(imagePath(contact.image)) : undefined,
+    sameAs: sameAs.length ? sameAs : undefined,
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      person,
+      {
+        "@type": "WebSite",
+        "@id": `${profileUrl}#website`,
+        name: settings.siteTitle,
+        url: profileUrl,
+        description: settings.siteDescription,
+        inLanguage: locale === "ar" ? "ar-TN" : locale === "tr" ? "tr-TR" : "en",
+        publisher: { "@id": `${profileUrl}#person` },
+      },
+    ],
+  };
 }
